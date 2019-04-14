@@ -1,0 +1,3 @@
+#perintah hapus file
+rm namafile.txt  >> hapus tanpa force, ada konfirmasinya
+rm -f namafile.txt >> hapus force tanpa konfirmasi
