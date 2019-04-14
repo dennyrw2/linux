@@ -1,3 +1,5 @@
-#perintah hapus file
 rm namafile.txt  >> hapus tanpa force, ada konfirmasinya
 rm -f namafile.txt >> hapus force tanpa konfirmasi
+rm -rf folder >> hapus rekursif (folder sak njero2ne)
+
+find . -name 'keyword-pencarian'
