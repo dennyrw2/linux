@@ -1,0 +1,562 @@
+reset hosting
+ 1001  2018-01-25 23:18:25 /scripts/pkgacct upcw5542 /root/
+ 1002  2018-01-25 23:19:15 tar ztvf /root/cpmove-upcw5542.tar.gz
+ 1003  2018-01-25 23:20:17 /scripts/removeacct upcw5542
+===========
+Migrasi Server
+- BUka OSIS
+- cek WHMCS > verifikasi kepemilikan
+- cek tiket > pahami req migrasi
+
+Server Asal
+- login whm Host Access Control
+  > sshd ALL Allow
+  > whostmgrd ALL allow
+  >> lewat ssh /etc/hosts.allow 
+- csf dimatikan bila migrasi massal
+
+server tujuan
+- pastikan IP shared hosting server tujuan sama ( Manage Reseller’s Shared IP & Basic WebHost Manager® Setup )
+- transfer tools ( port remote 2223)
+
+====================
+Mail Queue
+- buka vps pengki.rumahweb.net
+  998  cd exim/reports/wpiix5
+  
+  999  ll
+ 1000  more 2018-01-25_18-28-01.txt
+ 1001  cd /root/exim/reports/
+ 1002  ls
+ 1003  cat 2018-01-26_00-00-01.txt
+ 
+- bila di temukan pesan "Jumlah email saat di orchard.sgcp.rumahweb.com ini 205. Silahkan cek mail queue langsung pada server
+" > selanjutnya ke WHM orchard.sgcp.rumahweb.com
+- ke menu "ConfigServer Mail Queues"
+- view emails > cari email tujuan yang mencurigakan dan klik IDnya
+- masuk ke ssh orchard 
+  > grep 1eeYZj-000h9m-K1 /var/log/exim_mainlog
+- dihapus
+
+via ssh
+- login ke ssh server
+- exim -bp | awk {'print $4'} | sort | uniq -c | sort -nk 1 >> mendapatkan user email yang banyak ( valter.morelra@dsv.com ) | email user fs@felixsutandar.com
+- for emails in `exim -bp | grep afdal@silkargo-srg.co.id | awk {'print $3'}`; do exim -Mrm $emails; done atau
+for emails in `grep sales@hellenicmarine.com /var/log/exim_mainlog | grep "A=dovecot_login:bp_marketing@tarumanegara.co.id" | awk {'print $3'}
+`; do exim -Mrm $emails; done atau
+for emails in grep "A=dovecot_login:sda@banjarmasinkota.go.id" /var/log/exim_mainlog | awk {'print $3'}`; do exim -Mrm $emails; done
+for emails in `exim -bp | grep root@ /var/log/exim_mainlog  | awk {'print $3'}`; do exim -Mrm $emails; done  >> hajar semua yess
+exim -bp|grep kampungsumberalam | awk {'print $3'}| xargs exim -Mrm
+exim -bp|grep '<>' | awk {'print $3'}| xargs exim -Mrm >>hajar semua
+
+------------------
+awk '$3 ~ /^cwd/{print $3}' /var/log/exim_mainlog | sort | uniq -c | sed "s|^ *||g" | sort -nr  >> script email user
+
+Hapus frozen email
+---------------------------
+exim -bpru|grep frozen|awk {'print $3'}|xargs exim -Mrm
+---------------------------
+Remove All Bounces From The Exim Queue
+---------------------------
+exim -bp | grep '<>' | awk '/^ *[0-9]+[mhd]/{print "exim -Mrm " $3}' | bash 
+
+/usr/sbin/exim -M email-id
+
+cek queue post fix odin
+
+postqueue -p 
+postsuper -r ALL
+postqueue -i <ID>
+
+grep cwd /var/log/exim_mainlog | grep -v /var/spool | awk -F"cwd=" '{print $2}' | awk '{print $1}' | sort | uniq -c | sort -n >> email script
+https://www.inmotionhosting.com/support/email/exim/find-spam-script-location-with-exim
+
+more /var/log/exim_mainlog | grep /home
+
+<= ngirim
+=> menerima
+
+exim -bt (alamat email tujuan)
+
+===================
+Restore wpiix
+
+RESTORE BACKUP , RESTORE DATA WPIIX
+- Backup hosting
+ /usr/local/psa/bin/pleskbackup clients-name u1899729 --output-file=/root/u1899729.tar --backup-password=wpiixbackup
+- cek backup misal di wpiix5 /storage/wpiix3backup/11-03-2017
+- remove akun
+- masuk ke folder restore2: cd /var/lib/psa/dumps/restore2/
+- buat folder bebas, misal: mkdir sementara
+- copy file backup dari server backup ke direcotry ini: /var/lib/psa/dumps/restore2/sementara  lalu ekstrak  tar -xvf username.tar
+scp root@backup05.rumahweb.com:/storage/wpiix9backup/13-01-2018/wp228110.tar .
+- akan ada file yg namanya seperti format: backup_info_1703110717.xml
+- jalankan perintah berikut untuk restore (backup_info_1703180759.xml gantilah dengan file xml hasil ekstrak misal: backup_info_1703110717.xml)
+ /usr/local/psa/bin/pleskrestore --restore backup_info_1801130900.xml -level clients -backup-password wpiixbackup
+ 
+ =================
+ wpiix5 ssl error
+ 
+pre_le.sh(spasi)namadomain
+
+===============
+pindah data dari cpanel ke wpiix
+
+- cek mysql version
+- pindah ke rwcoba atau ke shared hosting yang sama mysql version
+
+=================
+Quaritine log rwscan
+1003  2018-01-29 12:07:47 cd /usr/local/rwscan
+ 1004  2018-01-29 12:07:50 ls
+ 1005  2018-01-29 12:08:01 cd results/
+ 1006  2018-01-29 12:08:04 ls
+ 1007  2018-01-29 12:08:21 cd almasn73
+ 1008  2018-01-29 12:08:22 ls
+ 1009  2018-01-29 12:08:43 cd 29-01-2018-09-38
+ 1010  2018-01-29 12:08:53 ls
+ 1011  2018-01-29 12:09:05 cat quarantine_log.txt
+ 1012  2018-01-29 12:09:22 cd ..
+ 1013  2018-01-29 12:09:28 ls
+ 1014  2018-01-29 12:09:31 cd 29-01-2018-09-38/
+ 1015  2018-01-29 12:09:36 cd malicious_file/
+ 1016  2018-01-29 12:09:37 ls
+
+ ================
+ Ubah mailhello dan mailips
+ 
+ /etc/mailips/
+ /etc/mailhelo/
+ 
+=================
+menambahkan versi php di cloudlinux
+
+ jalankan dari ssh di server cloudlinux untuk install PHP 7.2 dan atau update versi PHP selectornya: yum groupinstall alt-php 
+ 
+ tambah disable function
+ 
+ file nya di /opt/alt/phpxx/etc/php.ini misalnya /opt/alt/php53/etc/php.ini , /opt/alt/php72/etc/php.ini
+ 
+=======================
+email wp-hosting hilang
+
+
+- cek folder email : /var/qmail/mailnames/namadomain/namaakun
+- rename file maildirsize > maildirsize.old /etc
+- rename file dovecot.index > dovecot.index.old /etc
+- login emailnya, TARAAAAA!
+
+------------------------
+syncron dns plesk
+
+/usr/bin/php /usr/local/rwwpscripts/dns/transfer_dns.php  cdn.fbsmarketsinc.net. debug
+
+=============
+
+Rebuild mailhelo dan mailips
+===================================================
+for domain in `cat /etc/localdomains`; do echo -n $domain": " && host $(host -t A $domain | awk '{print $4}') | awk '{print $5}'; done >> /root/mailhelotemp
+more /root/mailhelotemp |  grep iix81 >> /root/mailhelo
+rm -rf /root/mailhelotemp
+mv -f /root/mailhelo /etc 
+/etc/init.d/exim restart
+/etc/init.d/dovecot restart
+mailhelo ne
+nek mailips manut seko cpanel e
+=================================================
+
+restore backup amazon s3
+- /scripts/pkgacct user /root
+- tar ztvf path
+- s3cmd get pathS3
+
+============
+rwscan cari
+find . -name scan_result.txt
+for files in `find . -name scan_result.txt`; do cat $files; done
+
+================
+custom php ini cagefs
+
+Caranya :
+1. Pastikan user udah masuk ke cagefs. Yang ini bisa dilakukan lewat WHM kalau emang belum tahu caranya dari shell :P
+2. Masuk ke cagefs-nya user, pakai perintah cagefsctl -e username (dari ssh)
+3. Ubah file alt_php.ini. Lokasinya tergantung dari versi php mana yang digunakan pelanggan (selain native, tentunya). Direktori utamanya sendiri ada di /etc/cl.php.d/
+
+=================
+restart simon
+
+/usr/local/simon/simonstop.sh && /usr/local/simon/simonstart.sh
+
+======================
+cek load hn
+vztop
+vzlist -o ctid,laverage
+vzctl enter ctid
+vzctl stop ctid
+vzctl start ctid
+
+=============
+
+tidak bisa start httpd
+
+mateni script #Include "/usr/local/apache/conf/modsec2.cpanel.conf" di file /usr/local/apache/conf/modsec2.conf
+
+==============
+high load
+nice top -c +shift M
+ls -l /proc/25851
+
+============
+cek emeila terblokir outlook / hotmail
+
+hotmail.com	teknisrw@hotmail.com kert0s0n0
+https://postmaster.live.com/snds/ipStatus.aspx
+https://support.live.com/eform.aspx?productKey=edfsmsbl3&ct=eformts&scrx=1
+https://support.microsoft.com/en-us/getsupport?oaspworkflow=start_1.0.0.0&wfname=capsub&productkey=edfsmsbl3&locale=en-us&ccsid=635760017758370029
+
+
+=======
+file index gak kebaca di plesk
+
+Coba tambah file vhost.conf di /var/www/vhosts/system/conf
+Isinya sama kayak vhost_ssl.conf
+
+
+/usr/local/psa/admin/sbin/httpdmng --reconfigure-domain kelapagading.co.id
+Coba dieksekusi lagi perintah itu
+
+====================
+install php ea
+yum install ea-php53-extension
+yum install ea-php54-php-curl ea-php55-php-curl ea-php56-php-curl ea-php70-php-curl ea-php71-php-curl ea-php72-php-curl
+
+===========
+easy apache 3 dan 4
+
+/scripts/migrate_ea3_to_ea4 --run
+/scripts/migrate_ea3_to_ea4 --revert --run
+
+==============
+dmarc
+
+https://www.inmotionhosting.com/support/email/fighting-spam/dmarc-setup
+
+====================
+index plesk tidak bisa auto
+
+copy /var/www/vhosts/system/blanjaria.com/conf/vhost.conf dan /var/www/vhosts/system/blanjaria.com/conf/vhost_ssl.conf ke vhostnya
+terus jalanin 
+/usr/local/psa/admin/sbin/httpdmng --reconfigure-domain bpjsjht.bestappforall.xyz
+
+=====================
+queueuprod restart
+
+/scripts/restartsrv_queueprocd
+
+===================
+cari file besar
+
+find . -type f -size +1G -exec ls -lh {} \; | awk '{ print $NF ": " $5 }'
+find . -name 'error_log' -size +500M -exec ls -lh {} + |  awk '{ print $NF ": " $5 }'
+du -a . | sort -n -r | head -n 20
+===========================
+perintah sed
+sed -i 's/frosine.com/yantiecatering.com/g' sfrs6754_wp415.sql
+sed 's/palkakreatif.shop/palkakreatif.com/g' wp227441_wordpress_9_2018-10-25_12-49-07.sql
+find . -type f -exec sed -i.bak "s/sfrn2018.com/sfrn2019.com/g" {} \;
+
+================
+disable xmlrpc
+/usr/local/apache/conf/includes/pre_virtualhost_global.conf
+
+===============
+nambah auth wp-admin di server
+
+tambahi ning /usr/local/apache/conf/includes/pre_virtualhost_global.conf
+#BEGIN BLOCK-WP-ADMIN-ATTACK
+#
+<Files wp-login.php>
+AuthType basic
+AuthName "Human Check - U: human P: password"
+AuthBasicProvider file
+AuthUserFile /home/wp-admin-attack-htpasswd-file
+Require valid-user
+ErrorDocument 401 "Authentication required"
+</Files>
+#
+# END BLOCK-WP-ADMIN-ATTACK
+
+terus gawe file /home/wp-admin-attack-htpasswd-file nek rung ono
+ning file /home/wp-admin-attack-htpasswd-file diisi human:jikzo/HRLvnYk
+
+=========================
+setting max vars
+
+1. Pastikan user udah masuk ke cagefs. Yang ini bisa dilakukan lewat WHM kalau emang belum tahu caranya dari shell :P
+2. Masuk ke cagefs-nya user, pakai perintah cagefsctl -e smay1343 (dari ssh)
+3. Ubah file alt_php.ini. Lokasinya tergantung dari versi php mana yang digunakan pelanggan (selain native, tentunya). Direktori utamanya sendiri ada di /etc/cl.php.d/ .
+
+=====================
+update vhosts semua
+file ada di wpiix2
+jalankan for domain in `plesk bin domain -l`; do sh vhostupdate.sh $domain; done
+
+=================
+mailip plesk
+plesk bin site -u indosupplystore.com -mail-service-ip 103.247.10.241
+
+=============
+kill clamd
+
+for pid in `ps -eo pid,command | grep clamscan | grep -v grep | awk '{print $1}'`; do kill -9 $pid; done
+
+==================
+ModSecurity: Output filter: Response body too large (over limit of 524288, total not specified)
+/etc/apache2/conf.d/userdata/std/2_4/user/modsec.conf
+
+SecResponseBodyLimit 546870912
+SecRequestBodyInMemoryLimit 546870912
+
+==============
+rouncube repair db
+
+/usr/local/cpanel/bin/update-roundcube-db --force
+/usr/local/cpanel/bin/update-roundcube-sqlite-db --force
+
+rpm -e --nodeps cpanel-roundcubemail
+/usr/local/cpanel/scripts/check_cpanel_rpms --fix
+
+MariaDB [(none)]> GRANT ALL PRIVILEGES ON roundcube.* TO 'roundcube'@'localhost' identified by 'Go1E6q5VXZaK6K60Ux10';
+Query OK, 0 rows affected (0.00 sec)
+
+MariaDB [(none)]> flush privileges;
+Query OK, 0 rows affected (0.01 sec)
+
+=====================
+email error
+
+ 05:50:42 H=mail-yb0-f194.google.com [209.85.213.194]:36295 X=TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128 CV=no F=<titobatuaji@gmail.com> rejected RCPT <info@belicode.com>: No such person at this address.
+
+ 
+ /scripts/mailperm usercpanel
+ 
+ ==================
+ cari file dan di grep
+ 
+ find . -name "*.php"  -print0 | xargs -0 egrep -l 'index_prx43'
+ 
+ =================
+ cek load mjbot
+ grep -r 'MJ12bot' /home/*/access-logs/ > /root/botmj12_denny.txt
+ cat /root/botmj12_denny.txt | awk {'print$1'} | uniq -c | sort -n
+ cut -f 3 -d '/' /root/botmj12_denny.txt | uniq -c | sort -n
+ 
+ ======================
+cek cpu sorting
+
+top -b -o -%CPU
+top -b -o -%MEM
+top -u nobody
+===================
+cek user
+
+OUT=$(/usr/local/cpanel/bin/dcpumonview | grep -v Top | sed -e 's#<[^>]*># #g' | while read i ; do NF=`echo $i | awk {'print NF'}` ; if [[ "$NF" == "5" ]] ; then USER=`echo $i | awk {'print $1'}`; OWNER=`grep -e "^OWNER=" /var/cpanel/users/$USER | cut -d= -f2` ; echo "$OWNER $i"; fi ; done) ; (echo "USER CPU" ; echo "$OUT" | sort -nrk4 | awk '{printf "%s %s%\n",$2,$4}' | head -5) | column -t ;echo;(echo -e "USER MEMORY" ; echo "$OUT" | sort -nrk5 | awk '{printf "%s %s%\n",$2,$5}' | head -5) | column -t ;echo;(echo -e "USER MYSQL" ; echo "$OUT" | sort -nrk6 | awk '{printf "%s %s%\n",$2,$6}' | head -5) | column -t ;
+
+================
+perintah find berdasarkan rentang waktu
+
+find /target_directory -type f -mmin -60
+
+========================
+cari other usage
+find /tmp/ -user ptsrs901
+find /tmp -user darulmc -exec rm {} \;
+========================
+uptime VPS HN
+
+for vps in `vzlist -aHo ctid`; do echo $vps; vzctl exec $vps "uptime"; done
+
+
+for vps in `vzlist -SHo ctid`; do vzctl start $vps; done >> start langsung
+
+==========================
+HN STorage
+
+pstorage -c pcs2 top
+pstorage -c pcs2 rm-cs --force csid
+
+=======================
+enable cagefs
+
+/usr/sbin/cagefsctl --enable dkppsryn
+
+================
+modsec tunnel PA2
+
+kl nemu block tunneling PA2 gt, langsung whitelist rule ini yak
+211820
+213020
+211210
+211650
+212680
+
+=====================
+IP whitelist apache
+
+/usr/local/apache/conf/ip_whitelist.txt
+
+===================
+check inodes perfolder
+
+du --inodes
+
+=================
+auto renew ssl server hosting
+
+/usr/local/cpanel/bin/checkallsslcerts --allow-retry --verbose
+
+==============
+setting php ini kamajaya
+
+selectorctl --set-user-current=5.6 --user=traj4785
+
+==================
+awstats recalculate
+
+/usr/bin/perl /usr/local/cpanel/3rdparty/bin/awstats.pl -config=salesforceindonesia.co.id -LogFile=/usr/local/apache/domlogs/salesforceindonesia.co.id -update
+
+/scripts/runweblogs [username]
+
+========================
+kill proses
+
+ps aux | grep rwscan | awk '{print $2}' | xargs kill -9
+for pid in `ps -eo pid,command | grep rwscan | grep -v grep | awk '{print $1}'`; do kill -9 $pid; done
+/scripts/restartsrv_clamd
+
+
+========================
+mysql prosess list
+
+/usr/bin/mysqladmin -i1 processlist status
+watch -n 2 mysqladmin proc 
+===================
+error login php seclib
+systemctl restart systemd-logind
+
+===================
+pantau top 5 tertinggi
+
+watch "ps aux | sort -nrk 3,3 | head -n 5"
+ps -Ao user,uid,comm,pid,pcpu,tty --sort=-pcpu | head -n 6
+================
+chek proses mysql peruser
+
+mysqladmin -u dbsh9747_att -p -i 1 processlist
+
+=============
+kill zombie
+
+kill $(ps -A -ostat,ppid | awk '/[zZ]/ && !a[$2]++ {print $2}')
+
+============
+ab tool
+
+ab -k -c 50 -n 1000 -H "Accept-Encoding: gzip, deflate" http://glostore.id/
+ab -k -c 50 -n 1000 http://glostore.id/
+-k Mengirimkan instruksi ke web server agar koneksi yang sudah dibuka tidak ditutup melainkan digunakan ulang. Ini meniru perilaku browser.
+-c Berapa banyak koneksi bersamaan yang dibuka. Bisa dianalogikan dengan banyaknya pengunjung dalam satu waktu.
+-n Jumlah permintaan konten yang akan dibuat ke web server.
+-H Pada umumnya web server sudah standar mengaktifkan kompresi GZIP untuk koneksinya dan dengan header "Accept-Encoding: gzip, deflate" akan diminta versi tersebut. Kalau anda hilangkan bisa terlihat selisih performanya yang cukup terasa.
+============
+artisan laravel
+php artisan route:cache
+php artisan view:clear
+php artisan config:cache
+
+
+======
+
+cek spek hosting
+
+cat /proc/cpuinfo
+
+==========
+gmail
+
+https://security.google.com/settings/security/activity?hl=en&pli=1
+
+https://www.google.com/settings/u/1/security/lesssecureapps
+
+https://accounts.google.com/b/0/DisplayUnlockCaptcha
+
+=============
+whitelist modsec wp-hosting
+
+<IfModule mod_security2.c>
+SecRuleRemoveById 340162
+SecRuleRemoveById 340163
+</IfModule>
+===========
+
+
+==========================
+Email/postfix
+==========================
+Set IP address for the mail service for the domain:
+# plesk bin site -u example.com -mail-service-ip <new_ip>
+contoh:
+plesk bin site -u kopideli.com -mail-service-ip 103.247.11.221
+
+SPAM CHECK
+[root@wpiix7 log]# grep gatot@mitransat.com maillog | awk {'print $33'} > /var/www/vhosts/wpiix7.rumahweb.com/httpdocs/spam.txt
+
+check mail queue:
+postqueue -p > tampilkan mail queue
+qshape > tampilkan mail queue per domain tujuan
+postcat -qv IDpostfix > mirip exim -Mvh
+
+delete:
+postsuper -d mailid
+postsuper -d deferred > delete all deferred mail
+
+-------------------
+Delete mails to a specific mail address
+You need to some work here as postfix has no direct command for this.
+
+Following sample is taken from postsuper man page:
+
+mailq | tail -n +2 | grep -v '^ *(' | awk  'BEGIN { RS = "" } { if ($8 == "USER@EXAMPLE.COM" && $9 == "") print $1 } ' | tr -d '*!' | postsuper -d -
+Just replace USER@EXAMPLE.COM with receiver email address.
+
+$8 will contain recipient1 email-address, $9 will contain recipient2 email-address.
+
+If you want to filter from-email address, use $7 variable.
+-------------------
+
+===============
+kill proses simultan
+
+ps aux | grep clag1184 | awk '{print $0}' | xargs kill -9
+
+==================
+setting db dns plesk
+
+/var/named/ atau /usr/local/dnssync/dnsdata 
+
+=================
+cek domain harus save ulang multiphp
+
+grep 'file permissions deny server access' /usr/local/apache/logs/error_log  | cut -d / -f5 | uniq
+
+============
+git command
+
+git init
+git add README.md
+git commit -m "first commit"
+git remote add origin https://github.com/dennyrw2/mahoantie.git
+git push -u origin master
+
+=================
